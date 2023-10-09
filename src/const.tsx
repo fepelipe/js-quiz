@@ -1,5 +1,6 @@
 export const keywords = [
   "arguments",
+  "async",
   "await",
   "break",
   "case",
@@ -48,5 +49,4 @@ export const keywords = [
   "void",
   "while",
   "with",
-  "yield",
 ]
