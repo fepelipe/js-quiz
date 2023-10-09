@@ -44,20 +44,30 @@ const App = () => {
   return (
     <div className="App">
       <header className="App-header">
+        <div className="title">
+          <h1>Javascript Keywords</h1>
+          <div className="subTitle">How many keywords can you name?</div>
+        </div>
         <div className="toolbar">
           <div className="keyword">
-            <input type="text" id="keywordInput" onChange={onKeywordChange}></input>
+            <div className="keyword-title">Enter keyword:</div>
+            <input
+              className="keyword-input"
+              type="text"
+              id="keywordInput"
+              onChange={onKeywordChange}
+            ></input>
           </div>
           <div className="score">
             <div className="scoreTitle">Score</div>
-            <div className="scoreCounter">{`${score}/${totalKeywords}`}</div>
+            <div className="score-counter">{`${score}/${totalKeywords}`}</div>
           </div>
           <div className="pause">
-            <button className="pauseButton"></button>
+            <button className="pause-button"></button>
           </div>
           <div className="timer">
             <div className="timerTitle">Timer</div>
-            <div className="timerCountdown">{countdownLabel}</div>
+            <div className="timer-countdown">{countdownLabel}</div>
           </div>
         </div>
         <table className="keywords-table">
