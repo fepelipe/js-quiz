@@ -6,11 +6,10 @@ const App = () => {
   const [score, setScore] = useState(0);
   const [countdownLabel, setCountdownLabel] = useState("05:00");
   const [counter, setCounter] = useState(-1);
-  const [foundWords, setFoundWords] = useState(new Set());
+  const [foundWords, setFoundWords] = useState(new Set<string>());
   const [playButtonBackgroundImage, setPlayButtonBackgroundImage] = useState(
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' class='w-6 h-6'%3E%3Cpath fill-rule='evenodd' d='M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z' clip-rule='evenodd' /%3E%3C/svg%3E%0A"
   );
-  const [keywordInputDisabled, setKeywordInputDisabled] = useState(true);
   const [paused, setPaused] = useState(true);
 
   const totalKeywords = keywords.length;
@@ -34,15 +33,30 @@ const App = () => {
       return () => clearInterval(timer);
     } else if (counter === 0) {
       setCountdownLabel("00:00");
+      setPaused(true);
+      setPlayButtonBackgroundImage(
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' class='w-6 h-6'%3E%3Cpath fill-rule='evenodd' d='M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z' clip-rule='evenodd' /%3E%3C/svg%3E%0A"
+      );
     }
-  }, [counter, paused]);
+  }, [counter, paused, foundWords]);
 
   const onPlayButtonClick = () => {
+    if (counter === 0) {
+      setCountdownLabel("05:00");
+      setScore(0);
+      foundWords.forEach((word) => {
+        const keywordIndexFound = keywords.indexOf(word);
+        if (keywordIndexFound > -1) {
+          const cell = document.getElementById(`cell${keywordIndexFound + 1}`);
+          if (cell) cell.innerHTML = "";
+        }
+      });
+      setFoundWords(new Set());
+    }
     setPlayButtonBackgroundImage(
       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' class='w-6 h-6'%3E%3Cpath fill-rule='evenodd' d='M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z' clip-rule='evenodd' /%3E%3C/svg%3E%0A"
     );
-    setKeywordInputDisabled(false);
-    if (counter <= 0) setCounter(299);
+    if (counter <= 0) setCounter(300);
     setPaused(false);
   };
 
@@ -50,7 +64,6 @@ const App = () => {
     setPlayButtonBackgroundImage(
       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' class='w-6 h-6'%3E%3Cpath fill-rule='evenodd' d='M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z' clip-rule='evenodd' /%3E%3C/svg%3E%0A"
     );
-    setKeywordInputDisabled(true);
     setPaused(true);
   };
 
@@ -97,7 +110,7 @@ const App = () => {
               type="text"
               id="keywordInput"
               onChange={paused ? undefined : onKeywordChange}
-              disabled={keywordInputDisabled}
+              disabled={paused ? true : false}
             />
           </div>
           <div className="score">
