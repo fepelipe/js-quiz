@@ -1,17 +1,71 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import { keywords } from "./const";
 
 const App = () => {
   const [score, setScore] = useState(0);
   const [countdownLabel, setCountdownLabel] = useState("05:00");
-  const [foundWords, setFoundWords] = useState(new Set());
+  const [counter, setCounter] = useState(-1);
+  const [foundWords, setFoundWords] = useState(new Set<string>());
+  const [playButtonBackgroundImage, setPlayButtonBackgroundImage] = useState(
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' class='w-6 h-6'%3E%3Cpath fill-rule='evenodd' d='M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z' clip-rule='evenodd' /%3E%3C/svg%3E%0A"
+  );
+  const [paused, setPaused] = useState(true);
 
   const totalKeywords = keywords.length;
+  const playButtonStyle = {
+    backgroundImage: `url("${playButtonBackgroundImage}")`,
+  };
 
-  // setInterval(() => {
-  //   setCountdownLabel(`${minutes}:${seconds}`);
-  // }, 1000);
+  useEffect(() => {
+    const resumeCountdown = () => {
+      const minutes = Math.floor(counter / 60);
+      const seconds = counter % 60;
+      setCounter(counter - 1);
+      setCountdownLabel(
+        `${minutes.toString().padStart(2, "0")}:${seconds
+          .toString()
+          .padStart(2, "0")}`
+      );
+    };
+    if (counter > 0 && !paused) {
+      const timer = setInterval(resumeCountdown, 1000);
+      return () => clearInterval(timer);
+    } else if (counter === 0) {
+      setCountdownLabel("00:00");
+      setPaused(true);
+      setPlayButtonBackgroundImage(
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' class='w-6 h-6'%3E%3Cpath fill-rule='evenodd' d='M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z' clip-rule='evenodd' /%3E%3C/svg%3E%0A"
+      );
+    }
+  }, [counter, paused, foundWords]);
+
+  const onPlayButtonClick = () => {
+    if (counter === 0) {
+      setCountdownLabel("05:00");
+      setScore(0);
+      foundWords.forEach((word) => {
+        const keywordIndexFound = keywords.indexOf(word);
+        if (keywordIndexFound > -1) {
+          const cell = document.getElementById(`cell${keywordIndexFound + 1}`);
+          if (cell) cell.innerHTML = "";
+        }
+      });
+      setFoundWords(new Set());
+    }
+    setPlayButtonBackgroundImage(
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' class='w-6 h-6'%3E%3Cpath fill-rule='evenodd' d='M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z' clip-rule='evenodd' /%3E%3C/svg%3E%0A"
+    );
+    if (counter <= 0) setCounter(300);
+    setPaused(false);
+  };
+
+  const onPauseButtonClick = () => {
+    setPlayButtonBackgroundImage(
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' class='w-6 h-6'%3E%3Cpath fill-rule='evenodd' d='M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z' clip-rule='evenodd' /%3E%3C/svg%3E%0A"
+    );
+    setPaused(true);
+  };
 
   const onKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const word = event.target.value;
@@ -49,22 +103,26 @@ const App = () => {
           <div className="subTitle">How many keywords can you name?</div>
         </div>
         <div className="toolbar">
-          <div className="keyword">
+          <div className="keyword" id="keyword">
             <div className="keyword-title">Enter keyword:</div>
             <input
               className="keyword-input"
               type="text"
               id="keywordInput"
-              onChange={onKeywordChange}
-            ></input>
+              onChange={paused ? undefined : onKeywordChange}
+              disabled={paused ? true : false}
+            />
           </div>
           <div className="score">
             <div className="scoreTitle">Score</div>
             <div className="score-counter">{`${score}/${totalKeywords}`}</div>
           </div>
-          <div className="pause">
-            <button className="pause-button"></button>
-          </div>
+          <button
+            className="play-button"
+            id="playButton"
+            onClick={paused ? onPlayButtonClick : onPauseButtonClick}
+            style={playButtonStyle}
+          />
           <div className="timer">
             <div className="timerTitle">Timer</div>
             <div className="timer-countdown">{countdownLabel}</div>
